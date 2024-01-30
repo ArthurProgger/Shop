@@ -12,38 +12,69 @@ namespace Shop.Controllers
         public ShopContext _shopContext;
         public ProductController(ShopContext shopContext) => _shopContext = shopContext;
 
-        [HttpGet]
+        [HttpGet(nameof(AllProducts))]
         public IEnumerable AllProducts() => _shopContext.Products;
 
-        [HttpPost]
-        public void NewProduct([FromBody] Product product)
+        [HttpPost(nameof(NewProduct))]
+        public void NewProduct([FromQuery] Product product)
         {
             _shopContext.Products.Add(product);
             _shopContext.SaveChanges();
         }
 
-        [HttpPut]
-        public void UpdateProduct([FromBody] Product product)
+        [HttpPut(nameof(UpdateProduct))]
+        public IActionResult UpdateProduct([FromQuery] Product product)
         {
-            _shopContext.Products.Update(product);
+            try
+            {
+                Product updatingProduct = _shopContext.Products.First(prod => prod.Id == product.Id);
+                updatingProduct = product;
+                _shopContext.SaveChanges();
+                return Ok();
+            }
+            catch (System.InvalidOperationException)
+            {
+                return NotFound();
+            }
         }
 
-        [HttpDelete]
+        [HttpDelete(nameof(DeleteProduct))]
         public IActionResult DeleteProduct(int id)
         {
             try
             {
                 Product product = _shopContext.Products.First(product => product.Id == id);
-                if (product is null)
-                    return NotFound();
-
                 _shopContext.Products.Remove(product);
+                _shopContext.SaveChanges();
                 return Ok();
             }
             catch (System.InvalidOperationException)
             {
-                return BadRequest();
+                return NotFound();
             }
         }
+
+        [HttpPost(nameof(Purchase))]
+        public IActionResult Purchase(int productId, double count)
+        {
+            try
+            {
+                Product product = _shopContext.Products.First(product => product.Id == productId);
+                _shopContext.PurchasesProducts.Add(new PurchaseProduct
+                {
+                    Product = product,
+                    Count = count
+                });
+                _shopContext.SaveChanges();
+                return Ok();
+            }
+            catch (System.InvalidOperationException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet(nameof(CountOfProduct))]
+        public double CountOfProduct(int id) => _shopContext.PurchasesProducts.Where(purchase => purchase.Product.Id == id).Sum(purchase => purchase.Count);
     }
 }

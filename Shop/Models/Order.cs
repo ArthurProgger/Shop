@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Shop.Models
 {
     public class Order
     {
         public int Id { get; set; }
-        public List<SaleProduct> SaleProducts { get; set; } = new List<SaleProduct>();
+        public DateTime DateTime { get; set; } = DateTime.Now;
+        public IEnumerable<SaleProduct> SaleProducts { get; set; } = new List<SaleProduct>();
     }
 }
