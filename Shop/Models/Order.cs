@@ -7,6 +7,6 @@ namespace Shop.Models
     {
         public int Id { get; set; }
         public DateTime DateTime { get; set; } = DateTime.Now;
-        public IEnumerable<SaleProduct> SaleProducts { get; set; } = new List<SaleProduct>();
+        public List<SaleProduct> SaleProducts { get; set; } = new List<SaleProduct>();
     }
 }

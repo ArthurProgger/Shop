@@ -19,15 +19,19 @@ namespace Shop.Controllers
         [HttpPost(nameof(NewOrder))]
         public void NewOrder([FromBody] IEnumerable<SaleProduct> sales)
         {
+            Order order = new Order();
             foreach (SaleProduct saleProduct in sales)
             {
                 try
                 {
                     Product product = _shopContext.Products.First(product => product.Id == saleProduct.ProductId);
-                    double factCount = _shopContext.PurchasesProducts.Where(purchase => purchase.ProductId == product.Id).Sum(purchase => purchase.Count);
+                    double salesProductCount = _shopContext.SalesProducts.Where(sale => sale.ProductId == product.Id).Sum(sale => sale.Count), 
+                        purchasesProductCount = _shopContext.PurchasesProducts.Where(purchase => purchase.ProductId == product.Id).Sum(purchase => purchase.Count),
+                        factCount = purchasesProductCount - salesProductCount;
                     if (saleProduct.Count <= factCount)
                     {
                         _shopContext.SalesProducts.Add(saleProduct);
+                        order.SaleProducts.Add(saleProduct);
                     }
                 }
                 catch (System.InvalidOperationException)
@@ -36,8 +40,11 @@ namespace Shop.Controllers
                 }
             }
 
-            _shopContext.Orders.Add(new Order());
-            _shopContext.SaveChanges();
+            if (order.SaleProducts.Count() > 0)
+            {
+                _shopContext.Orders.Add(order);
+                _shopContext.SaveChanges();
+            }
         }
 
         [HttpDelete(nameof(DeleteOrder))]

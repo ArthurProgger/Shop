@@ -28,7 +28,10 @@ namespace Shop.Controllers
             try
             {
                 Product updatingProduct = _shopContext.Products.First(prod => prod.Id == product.Id);
-                updatingProduct = product;
+
+                foreach (var prop in typeof(Product).GetProperties())
+                    prop.SetValue(updatingProduct, prop.GetValue(product));
+
                 _shopContext.SaveChanges();
                 return Ok();
             }
